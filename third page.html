@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.8/xlsx.full.min.js"></script>
+  <title>FACELOG</title>
+</head>
+
+<body>
+  <div class="back">
+    <div class="heading-box">
+      <div id="heading-image"><img id="signUpPic" src="/Minor Project/signUpPic2.png" alt="" />
+      </div>
+      <div class="Sub-heading">
+        <p>FACE RECOGNITION ATTENDANCE SYSTEM</p>
+      </div>
+    </div>
+    <div id="input-form">
+      <form action="">
+        <label for="from">From-Date</label>
+        <input type="date" id="from">
+        <label for="to">To-Date</label>
+        <input type="date" id="to">
+        <button type="submit">SUBMIT</button>
+      </form>
+    </div>
+    <!-- <table class="table table-striped padds" id="my-table">
+          <thead>
+            <tr>
+              <th scope="col">S.No</th>
+              <th scope="col">Name</th>
+              <th scope="col">RollNO</th>
+              <th scope="col">Year</th>
+              <th scope="col">Attendance</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>     -->
+    <div id="mapContainer">
+      <table id="advance-table"></table>
+    </div>
+    <div id="btn-container">
+      <button onclick="exportTableToExcel('advance-table')" id="btnItIs">Download</button>
+    </div>
+    <script>
+      function exportTableToExcel(tableID) {
+        var wb = XLSX.utils.table_to_book(document.getElementById(tableID), { sheet: "Sheet JS" });
+        XLSX.writeFile(wb, 'table.xlsx');
+      }
+    </script>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+    crossorigin="anonymous"></script>
+  <script src="thirdpage.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+    import { collection, doc, getDocs, getFirestore } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBZHfqVtBSdPhHhmt1fYSznnVcEDSuuZN0",
+      authDomain: "cognida-3a5de.firebaseapp.com",
+      databaseURL: "https://cognida-3a5de-default-rtdb.firebaseio.com",
+      projectId: "cognida-3a5de",
+      storageBucket: "cognida-3a5de.appspot.com",
+      messagingSenderId: "53326986851",
+      appId: "1:53326986851:web:248dfe1819166478e38256",
+      measurementId: "G-GXESJPYBH3"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const datesRef = collection(db, "dates");
+    const attRef = collection(db, "attendance");
+    const teacherRef = collection(db, "teacher");
+    const docSnap = await getDocs(datesRef);
+    const docSnap2 = await getDocs(attRef);
+    const docSnap3 = await getDocs(teacherRef);
+    var dateList = [];
+    var daysList = [];
+    var teacherAtt = [];
+    var i = 0;
+    docSnap.forEach((doc) => {
+      dateList[i] = [doc.id, doc.data()];
+      i++;
+    });
+    i = 0;
+    docSnap2.forEach((doc) => {
+      daysList[i] = [doc.id, doc.data().date];
+      i++;
+    });
+    i = 0;
+    docSnap3.forEach((doc) => {
+      teacherAtt[i] = (doc.data().date);
+      i++;
+    });
+
+    function formatDate(val) {
+      const parts = val.split("-");
+      const day = parts[2];
+      const month = parts[1];
+      const year = parts[0];
+      const formattedDate = `${day}-${month}-${year}`;
+      return formattedDate;
+    };
+    function formatDate2(val) {
+      const parts = val.split("/");
+      const day = parts[0];
+      const month = parts[1];
+      const year = parts[2];
+      const formattedDate = `${day}-${month}-${year}`;
+      return formattedDate;
+    };
+    var finalTeacherArray = teacherAtt[0];
+    for (let i = 0; i < finalTeacherArray.length; i++) {
+      finalTeacherArray[i] = formatDate2(finalTeacherArray[i]);
+    }
+    function isDateBetween(inputDate, startDate, endDate) {
+      const [inputDay, inputMonth, inputYear] = inputDate.split('-');
+      const [startDay, startMonth, startYear] = startDate.split('-');
+      const [endDay, endMonth, endYear] = endDate.split('-');
+
+      const inputTimestamp = new Date(inputYear, inputMonth - 1, inputDay).getTime();
+      const startTimestamp = new Date(startYear, startMonth - 1, startDay).getTime();
+      const endTimestamp = new Date(endYear, endMonth - 1, endDay).getTime();
+
+      return inputTimestamp >= startTimestamp && inputTimestamp <= endTimestamp;
+    }
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const fromDate = document.getElementById('from').value;
+      const toDate = document.getElementById('to').value;
+      var newFromDate = formatDate(fromDate);
+      var newToDate = formatDate(toDate);
+      var finalArray = [];
+      for (let i = 0; i < dateList.length; i++) {
+        if (isDateBetween(dateList[i][0], newFromDate, newToDate)) {
+          var ele = dateList[i][1].names;
+          finalArray.push(...ele);
+        }
+      }
+      var countOfDays = 0;
+      for (let i = 0; i < finalTeacherArray.length; i++) {
+        if (isDateBetween(finalTeacherArray[i], newFromDate, newToDate)) {
+          countOfDays++;
+        }
+      }
+      console.log(countOfDays);
+      var mp = new Map();
+      for (const str in finalArray) {
+        if (mp[finalArray[str]] !== undefined) {
+          mp[finalArray[str]] += 1;
+        }
+        else {
+          mp[finalArray[str]] = 1;
+        }
+      }
+      const compareDates = (a, b) => {
+        const dateA = new Date(a[0].split("-").reverse().join("-"));
+        const dateB = new Date(b[0].split("-").reverse().join("-"));
+        return dateA - dateB;
+      };
+      dateList.sort(compareDates);
+      for (const key in mp) {
+        if (mp.hasOwnProperty(key)) {
+          // console.log(`${key}: ${mp[key]}`);
+        }
+      }
+      function renderTable(mp) {
+        const tableContainer = document.getElementById('advance-table');
+        const table = document.createElement('table');
+        const headerRow = document.createElement('tr');
+        const nameHeader = document.createElement('th');
+        const attendanceHeader = document.createElement('th');
+        const sNoHeader = document.createElement('th');
+        sNoHeader.textContent = 'SNo';
+        nameHeader.textContent = 'Name';
+        attendanceHeader.textContent = 'Attendance';
+        headerRow.appendChild(sNoHeader);
+        headerRow.appendChild(nameHeader);
+        headerRow.appendChild(attendanceHeader);
+        table.appendChild(headerRow);
+        var i = 1;
+        for (const name in mp) {
+          const row = document.createElement('tr');
+          const nameCell = document.createElement('td');
+          const attendanceCell = document.createElement('td');
+          const sNoCell = document.createElement('td');
+          const aCell = document.createElement('a');
+          aCell.textContent = name;
+          const att = document.createAttribute('href');
+          att.value = `calendar.html#${name}`;
+
+          aCell.setAttributeNode(att);
+          sNoCell.textContent = i++;
+          var my_attendance = (mp[name] / countOfDays) * 100;
+          attendanceCell.textContent = my_attendance.toFixed(2) + "%";
+          row.appendChild(sNoCell);
+          row.appendChild(nameCell);
+          nameCell.appendChild(aCell);
+          row.appendChild(attendanceCell);
+          table.appendChild(row);
+        }
+        tableContainer.innerHTML = '';
+        tableContainer.appendChild(table);
+      }
+      // console.log(dateList);
+      renderTable(mp);
+    });
+  </script>
+</body>
+</html>

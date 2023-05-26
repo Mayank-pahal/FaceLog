@@ -1,0 +1,74 @@
+body{
+    margin: 0;
+    padding: 0;   
+    background-image: url("background.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100vh;
+    background-color: #008D86; 
+    background-image: linear-gradient(to bottom , #008D86, white);
+    z-index: -1;
+}
+
+
+.heading-box{
+    padding: 3%;
+    position: relative;
+}
+
+.Sub-heading{
+    font-size: 2rem;
+    font-weight: 600;
+    margin-top: 1%;
+}
+
+.info-boxx{
+    max-width: 100%;
+}
+.text-large {
+    font-size: 150%;
+  }
+
+.padds{
+    text-align: center;
+}
+
+#mapContainer{
+    padding: 3%;
+    font-size: 1.2rem;
+}
+
+
+#input-form{
+    font-size: 1.3rem;
+    padding-left: 3%;
+}
+
+#advance-table td a {
+    color: black;
+    text-decoration: none;
+    word-spacing: 5%;
+  }
+
+#btn-container{
+    padding-left: 3%;
+}
+
+#btnItIs{
+    padding: 1.5vh;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 2.5vh;
+    border: 1px solid #008D86;
+}
+
+#btnItIs:hover{
+    background-color: #008D86;
+    color: white;
+    border: 1px solid white;
+}
+
+th,td{
+    padding: .5vh;
+    font-size: 2vh;
+}

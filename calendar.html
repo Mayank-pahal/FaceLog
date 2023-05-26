@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/index.global.min.js'></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id="calendar"></div>
+    <div id="formattedDate"></div>
+<script>
+  var calendarEl = document.getElementById('calendar');
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    // initialDate:"2023-04-04",
+    events:[
+      {
+      }
+    ]
+  });
+  calendar.render();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+  import { collection, doc, getDoc, getFirestore } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; 
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZHfqVtBSdPhHhmt1fYSznnVcEDSuuZN0",
+    authDomain: "cognida-3a5de.firebaseapp.com",
+    databaseURL: "https://cognida-3a5de-default-rtdb.firebaseio.com",
+    projectId: "cognida-3a5de",
+    storageBucket: "cognida-3a5de.appspot.com",
+    messagingSenderId: "53326986851",
+    appId: "1:53326986851:web:248dfe1819166478e38256",
+    measurementId: "G-GXESJPYBH3"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const tempUrl = window.location.hash.slice(1);
+  const attendanceRef = doc(db, "attendance",tempUrl);
+  const docSnap = await getDoc(attendanceRef)
+      docSnap.data().date.forEach((doc) => {
+        const parts = doc.split("/");
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2];
+        const formattedDate = `${year}-${month}-${day}`;
+        console.log(formattedDate);
+        calendar.addEvent({
+          title:doc,
+          start:formattedDate,
+        });
+      }); 
+</script>
+</body>
+</html>

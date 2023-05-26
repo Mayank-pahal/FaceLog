@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="durationPage.css">
+    <title>Duration</title>
+</head>
+<body>
+    <div id="root">
+      <form action="">
+        <label for="from">From-Date</label>
+        <input type="date" id="from">
+        <label for="to">To-Date</label>
+        <input type="date" id="to">
+        <button type="submit">SUBMIT</button>
+      </form>
+      <div id="mapContainer">
+        <table>
+          <th>
+            <td>Name</td>
+            <td>Attendance</td>
+          </th>
+        </table>
+      </div>
+    </div>
+    <script src="durationPage.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+        import { collection, doc, getDocs, getFirestore, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; 
+        // import { doc, getDoc } from "firebase/firestore";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBZHfqVtBSdPhHhmt1fYSznnVcEDSuuZN0",
+          authDomain: "cognida-3a5de.firebaseapp.com",
+          databaseURL: "https://cognida-3a5de-default-rtdb.firebaseio.com",
+          projectId: "cognida-3a5de",
+          storageBucket: "cognida-3a5de.appspot.com",
+          messagingSenderId: "53326986851",
+          appId: "1:53326986851:web:248dfe1819166478e38256",
+          measurementId: "G-GXESJPYBH3"
+        };
+  
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const datesRef = collection(db, "dates");
+    const attRef = collection(db, "attendance");
+    const docSnap = await getDocs(datesRef);
+    const docSnap2= await getDocs(attRef);
+    var dateList=[];
+    var daysList=[];
+    var i=0;
+    docSnap.forEach((doc) =>{
+      dateList[i]=[doc.id,doc.data()];
+      i++;
+    });
+    i=0;
+    docSnap2.forEach((doc)=>{
+      daysList[i]=[doc.id,doc.data().date];
+      i++;
+    });
+    // console.log(daysList);
+    function formatDate(val){
+      const parts = val.split("-");
+      const day = parts[2];
+      const month = parts[1];
+      const year = parts[0];
+      const formattedDate = `${day}-${month}-${year}`;
+      return formattedDate;
+    };
+    function isDateBetween(inputDate, startDate, endDate) {
+      const [inputDay, inputMonth, inputYear] = inputDate.split('-');
+      const [startDay, startMonth, startYear] = startDate.split('-');
+      const [endDay, endMonth, endYear] = endDate.split('-');
+
+      const inputTimestamp = new Date(inputYear, inputMonth - 1, inputDay).getTime();
+      const startTimestamp = new Date(startYear, startMonth - 1, startDay).getTime();
+      const endTimestamp = new Date(endYear, endMonth - 1, endDay).getTime();
+
+      return inputTimestamp >= startTimestamp && inputTimestamp <= endTimestamp;
+    }
+    function renderTable(mp) {
+      const tableContainer = document.getElementById('mapContainer');
+      const table = document.createElement('table');
+      const headerRow = document.createElement('tr');
+      const nameHeader = document.createElement('th');
+      const attendanceHeader = document.createElement('th');
+      nameHeader.textContent = 'Name';
+      attendanceHeader.textContent = 'Attendance';
+      headerRow.appendChild(nameHeader);
+      headerRow.appendChild(attendanceHeader);
+      table.appendChild(headerRow);
+      for (const name in mp) {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        const attendanceCell = document.createElement('td');
+        nameCell.textContent = name;
+        attendanceCell.textContent = mp[name];
+        row.appendChild(nameCell);
+        row.appendChild(attendanceCell);
+        table.appendChild(row);
+      }
+      tableContainer.innerHTML = '';
+      tableContainer.appendChild(table);
+    }
+
+
+    const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const fromDate = document.getElementById('from').value;
+          const toDate = document.getElementById('to').value;
+          var newFromDate=formatDate(fromDate);
+          var newToDate=formatDate(toDate);
+          var finalArray=[];
+          for (let i = 0; i < dateList.length; i++) {
+            if(isDateBetween(dateList[i][0], newFromDate,newToDate)){
+              var ele=dateList[i][1].names;
+              finalArray.push(...ele);
+            }
+          }
+          var mp = new Map();
+          for(const str in finalArray){
+            if(mp[finalArray[str]] !== undefined){
+              mp[finalArray[str]]+=1;
+            }
+            else{
+              mp[finalArray[str]]=1;
+            }
+          }
+          const compareDates = (a, b) => {
+          const dateA = new Date(a[0].split("-").reverse().join("-"));
+          const dateB = new Date(b[0].split("-").reverse().join("-"));
+          return dateA - dateB;
+          };
+          dateList.sort(compareDates);  
+          for (const key in mp) {
+            if (mp.hasOwnProperty(key)) {
+              console.log(`${key}: ${mp[key]}`);
+            }
+          }
+          console.log(dateList);
+        renderTable(mp);  
+        });
+  </script>
+</body>
+</html>
